@@ -1,0 +1,52 @@
+{
+  "name": "dsh-image-studio",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "生图工作室：本地参考库（人物 / 服饰 / 场景 / 道具）+ 智能组合参考图 + 调用生图 API，模型可自行判断何时发图；设置页里可视化管理素材库。",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "image-generation",
+    "reference-library"
+  ],
+  "homepage": "https://github.com/aa1355721445-lgtm/dsh-image-studio#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aa1355721445-lgtm/dsh-image-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aa1355721445-lgtm/dsh-image-studio/issues"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/smoke-host.mjs && node tests/smoke-host-v2.mjs && node tests/smoke-host-v3.mjs && node tests/smoke-client.mjs",
+    "check": "node --check lib/client.js"
+  }
+}
