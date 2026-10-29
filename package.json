@@ -1,6 +1,6 @@
 {
   "name": "dsh-image-studio",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "生图工作室：本地参考库（人物 / 服饰 / 场景 / 道具）+ 智能组合参考图 + 调用生图 API，模型可自行判断何时发图；设置页里可视化管理素材库。",
