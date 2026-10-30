@@ -54,7 +54,8 @@ assert.equal(link.scheduleCharacter(cur.cfg, L).name, '鱼鱼', '小鱼 是 鱼�
 let plan = run({ characters: ['鱼鱼'] }, '14:10')
 assert.deepEqual(names(plan), ['JK短裙'])
 assert.match(plan.finalPrompt, /鱼鱼的穿着细节：外面加了件开衫/)
-assert.ok(plan.notes.some((n) => /按日程此刻（12:00–16:00 咖啡馆）的穿搭「JK短裙」（外面加了件开衫）/.test(n)), plan.notes.join('\n'))
+assert.ok(plan.notes.some((n) => /沿用鱼鱼此刻身上穿的「JK短裙」（外面加了件开衫）/.test(n)), plan.notes.join('\n'))
+assert.ok(!plan.notes.some((n) => /日程/.test(n)), 'model-facing notes avoid schedule-speak')
 // 用别名指人物也认
 assert.deepEqual(names(run({ characters: ['小鱼'] }, '14:10')), ['JK短裙'])
 
@@ -70,7 +71,7 @@ assert.deepEqual(names(run({ characters: ['鱼鱼'], scene: '江畔暖灯咖啡�
 plan = run({ characters: ['鱼鱼'] }, '03:00')
 assert.deepEqual(names(plan), [])
 assert.match(plan.finalPrompt, /【搭配】鱼鱼穿着睡衣/)
-assert.ok(plan.notes.some((n) => /按日程此刻（00:00–09:00 睡觉）的穿搭：睡衣（库里没有/.test(n)))
+assert.ok(plan.notes.some((n) => /沿用鱼鱼此刻身上穿的：睡衣（服饰库里没有/.test(n)))
 
 // 5. 这一段没写穿搭 → 默认规则
 assert.deepEqual(names(run({ characters: ['鱼鱼'] }, '17:00')), ['通勤休闲装'])

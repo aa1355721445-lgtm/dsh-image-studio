@@ -68,7 +68,7 @@ assert.match(txt(regs[0].comp({})), /加载中/)
 
 // 素材库
 let out = txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast }))
-assert.match(out, /人物/); assert.match(out, /小鱼/); assert.match(out, /2 张图/); assert.match(out, /新建人物/)
+assert.match(out, /人物/); assert.match(out, /小鱼/); assert.match(out, /2 张图/); assert.match(out, /手动新建/)
 // 空库
 const emptyLib = { dirs: library.dirs, categories: { characters: [], outfits: [], scenes: [], props: [] } }
 assert.match(txt(h(T.LibraryTab, { lib: emptyLib, setLib() {}, reloadLib: () => Promise.resolve(), toast })), /库还是空的/)
@@ -128,9 +128,9 @@ console.log('ALL CLIENT TESTS PASSED')
   let o = txt(h(T.KeywordsTab, { presets, onPresets() {}, lib: library, toast }))
   assert.match(o, /\[input:在家休息\]/); assert.match(o, /\[input:卧室\]/); assert.match(o, /\[input:午后暖阳\]/); assert.match(o, /添加情境/); assert.match(o, /恢复默认/)
 
-  // 素材库：有「从图片导入」
+  // 素材库：顶部就有「从图片生成三视图」
   o = txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: cfgKey }))
-  assert.match(o, /从图片导入/)
+  assert.match(o, /从图片生成三视图/)
 
   // 人物编辑：神态特点 + 情境穿搭（每个情境一行）+ 两个 AI 按钮
   const ent = { ...library.categories.characters[0], traits: '开心时尾巴会摇', situationOutfits: { 在家休息: '女仆装' } }
@@ -195,4 +195,44 @@ console.log('ALL CLIENT TESTS PASSED')
   assert.match(o, /扩写结果/); assert.match(o, /扩写没成功：rate limited/); assert.match(o, /你的原话：鲸鱼马克杯/); assert.match(o, /只有文字描述的条目/)
   assert.ok(!/同时保存原图/.test(o))
   console.log('ALL V3 CLIENT TESTS PASSED')
+
+  // ======================= v0.5：AI 生成入口放到最显眼的位置 =======================
+  // 素材库顶部：添加人物 → 用文字生成（推荐）/ 从图片生成三视图 / 手动新建（次要）
+  o = txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: cfgKey, goSettings() {} }))
+  assert.match(o, /添加人物/); assert.match(o, /用文字生成 推荐/); assert.match(o, /从图片生成三视图/); assert.match(o, /把图片拖到这里，或点击选择/)
+  assert.match(o, /\{ph:例如：银白短发的狼耳少女/); assert.match(o, /想自己填？ 手动新建/); assert.match(o, /拖到这个页面任何地方/)
+  assert.ok(o.indexOf('用文字生成') < o.indexOf('手动新建'), 'AI first, manual after')
+  assert.ok(!/先去「设置」填 API Key/.test(o))
+  // 没填 Key：提示去设置
+  assert.match(txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: state2.config, goSettings() {} })), /先去「设置」填 API Key/)
+  // 场景库写「设定图」；服饰库的提示
+  FakeReact.__override(['scenes'])
+  assert.match(txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: cfgKey })), /从图片生成设定图/)
+  FakeReact.__override(['outfits'])
+  assert.match(txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: cfgKey })), /截图丢进来就行/)
+  // 空库：不再只有手动新建
+  o = txt(h(T.LibraryTab, { lib: emptyLib, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: cfgKey }))
+  assert.match(o, /添加人物/); assert.match(o, /用上面任意一种方式添加第一个人物/)
+  // 拖图进页面时的遮罩
+  FakeReact.__override([undefined, undefined, undefined, undefined, true])
+  assert.match(txt(h(T.LibraryTab, { lib: library, setLib() {}, reloadLib: () => Promise.resolve(), toast, presets, config: cfgKey })), /松手：识别图片，生成角色三视图，存进「人物」库/)
+  // 收起后：一行三个按钮
+  FakeReact.__override([undefined, undefined, true])
+  o = txt(h(T.AddHero, { category: 'props', hasKey: true, toast, onText() {}, onImages() {}, onManual() {} }))
+  assert.match(o, /添加道具 用文字生成 从图片生成三视图 手动新建/); assert.match(o, /展开/)
+  // 带着文字 / 图片进导入页：预填好
+  o = txt(h(T.ImportPanel, { category: 'outfits', mode: 'text', initialText: '黑色风衣', initialName: '风衣', lib: library, config: cfgKey, toast, onBack() {}, onDone: () => Promise.resolve() }))
+  assert.match(o, /\[textarea:黑色风衣\]/); assert.match(o, /\[input:风衣\]/)
+  const fakeFile = new File([new Uint8Array([1, 2, 3])], 'a.png', { type: 'image/png' })
+  o = txt(h(T.ImportPanel, { category: 'outfits', mode: 'image', initialFiles: [fakeFile], lib: library, config: cfgKey, toast, onBack() {}, onDone: () => Promise.resolve() }))
+  assert.ok(!/把图片拖到这里/.test(o), 'file preloaded, drop zone replaced by thumbs'); assert.match(o, /开始/)
+  // 手动新建：顶部提示可以交给 AI
+  o = txt(h(T.EntryEditor, { category: 'outfits', entry: null, outfits: [], presets, config: cfgKey, toast, onBack() {}, onSaved() {}, onDeleted() {}, onAi() {} }))
+  assert.match(o, /不想自己填？交给 AI/); assert.match(o, /用文字生成/); assert.match(o, /从图片生成/)
+  FakeReact.__override([{ name: '风衣', aliases: '', tags: '', description: '黑色长款', persona: '', defaultOutfit: '', traits: '', situationOutfits: {} }, true, '', [{ file: fakeFile, url: 'blob:x' }]])
+  o = txt(h(T.EntryEditor, { category: 'outfits', entry: null, outfits: [], presets, config: cfgKey, toast, onBack() {}, onSaved() {}, onDeleted() {}, onAi() {} }))
+  assert.match(o, /已经加了 1 张图/); assert.match(o, /用这些图生成/); assert.match(o, /用这段描述生成/)
+  // 已有条目不显示
+  assert.ok(!/不想自己填/.test(txt(h(T.EntryEditor, { category: 'characters', entry: library.categories.characters[0], outfits: [], presets, config: cfgKey, toast, onBack() {}, onSaved() {}, onDeleted() {}, onAi: null }))))
+  console.log('ALL V5 CLIENT TESTS PASSED')
 }
