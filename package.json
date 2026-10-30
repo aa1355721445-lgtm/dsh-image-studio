@@ -46,7 +46,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "node tests/smoke-host.mjs && node tests/smoke-host-v2.mjs && node tests/smoke-host-v3.mjs && node tests/smoke-client.mjs",
+    "test": "node tests/smoke-host.mjs && node tests/smoke-host-v2.mjs && node tests/smoke-host-v3.mjs && node tests/smoke-schedule-link.mjs && node tests/smoke-client.mjs",
     "check": "node --check lib/client.js"
   }
 }
