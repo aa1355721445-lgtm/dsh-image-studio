@@ -1,6 +1,6 @@
 {
   "name": "dsh-image-studio",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "description": "生图工作室：本地参考库（人物 / 服饰 / 场景 / 道具）+ 智能组合参考图 + 调用生图 API，模型可自行判断何时发图；设置页里可视化管理素材库。",
@@ -46,7 +46,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "node tests/smoke-host.mjs && node tests/smoke-host-v2.mjs && node tests/smoke-host-v3.mjs && node tests/smoke-schedule-link.mjs && node tests/smoke-client.mjs",
+    "test": "node tests/smoke-host.mjs && node tests/smoke-host-v2.mjs && node tests/smoke-host-v3.mjs && node tests/smoke-schedule-link.mjs && node tests/smoke-b64.mjs && node tests/smoke-client.mjs",
     "check": "node --check lib/client.js"
   }
 }

@@ -3,6 +3,8 @@
 给 DeepSeek Harness 加一个会「看场合发图」的生图能力：本地四个参考库（人物 / 服饰 / 场景 / 道具），
 模型判断该出图时，插件按画面描述把对应的参考图组合起来，一起交给生图 API，保证角色和设定一致。
 
+> v0.5.1 起，走 65535 时图片数据直接从你选的线路返回，国内用「大陆优化线路」不用开代理也能拿到图。
+
 ## 它做了什么
 
 | 部分 | 说明 |
@@ -163,8 +165,9 @@ dsh plugin --profile desktop add https://github.com/aa1355721445-lgtm/dsh-image-
 ## 接口
 
 - **65535 原生异步任务**（默认）：`POST /v1/tasks` 提交，`GET /v1/tasks/{id}` 轮询；参考图以 data URI 放进
-  `input.image_urls`；带 `Idempotency-Key`，网络抖动重试不会重复扣费。完成后立刻把结果下载到本地
-  （平台的结果链接有有效期）。超时的任务会记成「等待取回」，可在生成记录里一键取回。
+  `input.image_urls`；带 `Idempotency-Key`，网络抖动重试不会重复扣费。提交时带 `response_format: "b64_json"`，
+  图片数据随查询结果从当前线路一起返回，存到本地；没带回数据时才去下载 `result_urls`（这些链接在海外节点上，
+  国内部分网络连不上，链接也有有效期）。超时或下载失败的任务会记成「等待取回」，可在生成记录里一键取回。
 - **OpenAI 兼容**：无参考图走 `/v1/images/generations`，有参考图走 `/v1/images/edits`（multipart）。
 
 API Key 只存在本机 `image-studio\config.json`，网页上只显示末四位。
